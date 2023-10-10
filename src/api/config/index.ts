@@ -6,6 +6,4 @@ export const Config: Schema<Config> = Schema.intersect([
         SESSDATA: Schema.string().required().description('bilibili的SESSDATA，cookie里找，必填'),
         buvid3: Schema.string().required().description('bilibili的buvid3，cookie里找，必填'),
     }).description('bilibili相关设置'),
-
-  
-  ]);
+]);
