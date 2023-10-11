@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-nazrin-video-bilibili",
-  "description": "暂定",
-  "version": "0.0.1",
+  "description": "赋予[nazrin-core](https://github.com/BSTluo/koishi-plugin-nazrin-core)聚合b站视频的能力",
+  "version": "0.1.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -13,7 +13,10 @@
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "nazrin",
+    "nazrin-core",
+    "bilibili"
   ],
   "peerDependencies": {
     "koishi": "^4.15.0",
