@@ -18,9 +18,19 @@ export class BilibiliSearch
     }
     public async search(keyword: string)
     {
+        let result:any;
         const data = await this.getBilibiliVideoSearchData(keyword);
-        if (!data && !data.result[11].data[0]) return this.returnErr();
-        const result = data.result[11].data;
+        if (!data){
+            return this.returnErr();
+        }
+        if(!data.result[11]){
+            if(!data.result[10]) return this.returnErr();
+            result = data.result[10].data;
+        } else {
+            result = data.result[11].data;
+        }
+
+        
 
         const avid: number[] = {} = result.map((item: { aid: number; }) =>
         {
