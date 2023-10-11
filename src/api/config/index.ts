@@ -5,5 +5,18 @@ export const Config: Schema<Config> = Schema.intersect([
     Schema.object({
         SESSDATA: Schema.string().required().description('bilibili的SESSDATA，cookie里找，必填'),
         buvid3: Schema.string().required().description('bilibili的buvid3，cookie里找，必填'),
+        qn: Schema.union([
+            Schema.const(6),
+            Schema.const(16),
+            Schema.const(64),
+            Schema.const(74),
+            Schema.const(80),
+            Schema.const(112).experimental(),
+            Schema.const(116).experimental(),
+            Schema.const(120).experimental(),
+            Schema.const(125).experimental(),
+            Schema.const(126).experimental(),
+            Schema.const(127).experimental(),
+          ]).default(80).description('视频的清晰度，具体看https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/video/info.md'),
     }).description('bilibili相关设置'),
 ]);

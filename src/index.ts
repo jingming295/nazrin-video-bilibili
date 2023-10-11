@@ -29,9 +29,20 @@ export function apply(ctx: Context, config: any)
   });
 
 
-  ctx.on('nazrin/parse_video', async (platform, url) =>
+  ctx.on('nazrin/parse_video', async (platform, url, data) =>
   {
     if (platform !== thisPlatform) return;  // 判断是否为本平台的解析请求
-    tempData
+    const bilibiliSearch = new BilibiliSearch(thisPlatform, config["SESSDATA"], config["buvid3"]);
+
+    const videoResource = await bilibiliSearch.returnVideoResource(data, config["qn"]);
+    if (!videoResource) return;
+    ctx.emit('nazrin/parse_over',
+      videoResource.url,
+      videoResource.name,
+      videoResource.author,
+      videoResource.cover,
+      videoResource.duration,
+      videoResource.bitRate,
+      videoResource.color);
   });
 }
