@@ -21,7 +21,6 @@ export function apply(ctx: Context, config: any)
 
   ctx.on('nazrin/video', async keyword =>
   {
-    console.log(`keyword: ${keyword}`);
     const bilibiliSearch = new BilibiliSearch(thisPlatform, config["SESSDATA"], config["buvid3"]);
 
     const findList = await bilibiliSearch.search(keyword);

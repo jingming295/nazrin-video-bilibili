@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Logger } from 'koishi';
 
 export let tempData = {};
 export class BilibiliSearch
@@ -8,6 +9,7 @@ export class BilibiliSearch
     buvid3: string;
     biliBiliPlatform: 'pc' | 'html5';
     biliBiliqn: number;
+    private logger: Logger;
     constructor(thisPlatform: string, SESSDATA: string, buvid3: string)
     {
         this.thisPlatform = thisPlatform;
@@ -15,6 +17,7 @@ export class BilibiliSearch
         this.buvid3 = buvid3;
         this.biliBiliPlatform = 'pc';
         this.biliBiliqn = 112
+        this.logger = new Logger('nazrin-video-bilibili');
     }
     public async search(keyword: string)
     {
@@ -155,7 +158,6 @@ export class BilibiliSearch
             return response.data.data;
         } catch (error: any)
         {
-            console.error('Error:', error.response.data.code);
             return null;
         }
 
@@ -185,7 +187,7 @@ export class BilibiliSearch
 
         } catch (error: any)
         {
-            console.error('Error:', error.response.data.code);
+            this.logger.error('Error:', error.response.data.code);
             return null;
         }
 
@@ -225,11 +227,11 @@ export class BilibiliSearch
                 return response.data.data;
             } else
             {
-                console.error('Error:', response.data.message);
+                this.logger.error('Error:', response.data.message);
             }
         } catch (error: any)
         {
-            console.error('Error:', error.message);
+            this.logger.error('Error:', error.message);
         }
     }
 
@@ -276,7 +278,6 @@ export class BilibiliSearch
      */
     private async checkResponseStatus(url: string)
     {
-        console.log(`platform: ${this.biliBiliPlatform} qn: ${this.biliBiliqn}`)
         try
         {
             const response = await axios.get(url, {
