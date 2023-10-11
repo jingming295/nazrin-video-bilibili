@@ -31,8 +31,11 @@
 
 ## 💝鸣谢
 [koishi](https://koishi.chat/)
+
 [koishi-plugin-nazrin-core](https://github.com/BSTluo/koishi-plugin-nazrin-core)
+
 [bilibili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect)
+
 [axios](https://www.npmjs.com/package/axios)
 
 ***
