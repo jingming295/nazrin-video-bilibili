@@ -10,7 +10,7 @@
 <h3 align="center">koishi-plugin-nazrin-video-bilibili</h3>
 
   <p align="center">
-    使[koishi-plugin-nazrin-core](https://github.com/BSTluo/koishi-plugin-nazrin-core)能够搜索bilibili的视频
+    使[koishi-plugin-nazrin-core](https://github.com/BSTluo/koishi-plugin-nazrin-core) 能够搜索bilibili的视频
   </p>
 </div>
 
