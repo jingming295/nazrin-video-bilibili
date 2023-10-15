@@ -90,21 +90,7 @@ interface VideoData
     enable_vt: number;
     vt_display: string;
     no_cache: boolean;
-    pages: {
-        cid: number;
-        page: number;
-        from: string;
-        part: string;
-        duration: number;
-        vid: string;
-        weblink: string;
-        dimension: {
-            width: number;
-            height: number;
-            rotate: number;
-        };
-        first_frame: string;
-    }[];
+    pages: Page[] | null;
     subtitle: {
         allow_submit: boolean;
         list: SubtitleList[];
@@ -136,6 +122,26 @@ interface VideoData
     like_icon: string;
     need_jump_bv: boolean;
     disable_show_up_info: boolean;
+}
+
+/**
+ * BVideoDetail下的data的page
+ * 如果视频有分页
+ */
+interface Page {
+    cid: number;
+    page: number;
+    from: string;
+    part: string;
+    duration: number;
+    vid: string;
+    weblink: string;
+    dimension: {
+        width: number;
+        height: number;
+        rotate: number;
+    };
+    first_frame: string;
 }
 
 /**

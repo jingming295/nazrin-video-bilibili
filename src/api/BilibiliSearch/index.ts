@@ -139,10 +139,10 @@ export class BilibiliSearch
 
     }
 
-    private getDurationByCid(pages: any[], cid: any)
+    private getDurationByCid(pages: Page[], cid: number)
     {
-        const page = pages.find((page: { cid: any; }) => page.cid === cid);
-        return page ? page.duration : null;
+        const page = pages.find((page: { cid: number; }) => page.cid === cid);
+        return page!.duration; // 使用非空断言操作符
     }
 
     private returnCompleteVideoResource(url: string, name: string, author: string, cover: string, duration: number, bitRate: number, color: string)
@@ -167,7 +167,7 @@ export class BilibiliSearch
      * @param qn bilibili qn 
      * @returns 
      */
-    private getQuality(qn: any)
+    private getQuality(qn: number)
     {
         switch (qn)
         {
@@ -220,8 +220,9 @@ export class BilibiliSearch
             {
                 return true;
             }
-        } catch (error: any)
+        } catch (error)
         {
+            this.logger.error(error);
             return false;
         }
     }
