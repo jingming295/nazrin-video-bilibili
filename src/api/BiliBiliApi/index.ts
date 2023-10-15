@@ -1,7 +1,18 @@
 import axios from 'axios';
 import { Logger } from 'koishi';
+/**
+ * BiliBili的Api
+ */
 export class BiliBiliApi
 {
+    /**
+     * 搜索请求
+     * @param keyWord 关键词
+     * @param SESSDATA SESSDATA
+     * @param buvid3 buvid3
+     * @param logger logger
+     * @returns BVideoSearchResponseData
+     */
     public async getBilibiliVideoSearchData(keyWord: string, SESSDATA: string, buvid3: string, logger: Logger)
     {
         const url = 'https://api.bilibili.com/x/web-interface/wbi/search/all/v2';
@@ -23,12 +34,19 @@ export class BiliBiliApi
             return null;
         } catch (error)
         {
-            logger.error('Error:', error);
+            logger.error('Error in getBilibiliVideoSearchData():', error);
             return null;
         }
 
     }
 
+    /**
+     * 主要获取视频的基本信息
+     * @param aid av号
+     * @param SESSDATA SESSDATA
+     * @param logger logger
+     * @returns BVideoDetail
+     */
     public async getBilibiliVideoDetailByAid(aid: number, SESSDATA: string, logger: Logger)
     {
         const url = 'https://api.bilibili.com/x/web-interface/view';
@@ -56,7 +74,7 @@ export class BiliBiliApi
 
         } catch (error)
         {
-            logger.error('Error:', error);
+            logger.error('Error in getBilibiliVideoDetailByAid():', error);
             return null;
         }
 
@@ -96,11 +114,11 @@ export class BiliBiliApi
                 return response.data.data;
             } else
             {
-                logger.error('Error:', response.data.message);
+                logger.error('Error in getBilibiliVideoStream():', response.data.message);
             }
         } catch (error)
         {
-            logger.error('Error:', error);
+            logger.error('Error in getBilibiliVideoStream():', error);
         }
     }
 }

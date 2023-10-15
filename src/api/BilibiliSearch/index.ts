@@ -87,6 +87,13 @@ export class BilibiliSearch
         return processedData;
     }
 
+    /**
+     * 返回videoResource
+     * @param data VideoData
+     * @param SESSDATA SESSDATA
+     * @param biliBiliqn biliBiliqn
+     * @returns VideoResource
+     */
     public async returnVideoResource(data: VideoData, SESSDATA: string, biliBiliqn: number)
     {
         let biliBiliPlatform = 'pc';
@@ -124,6 +131,11 @@ export class BilibiliSearch
 
 
     }
+
+    /**
+     * 返回错误的findlist
+     * @returns findList
+     */
     private returnErr()
     {
         const findList = [
@@ -137,12 +149,29 @@ export class BilibiliSearch
 
     }
 
+    /**
+     * 根据cid获得时长
+     * @param pages Page[]
+     * @param cid cid
+     * @returns 
+     */
     private getDurationByCid(pages: Page[], cid: number)
     {
         const page = pages.find((page: { cid: number; }) => page.cid === cid);
         return page!.duration; // 使用非空断言操作符
     }
 
+    /**
+     * 返回完整的VideoResource
+     * @param url 
+     * @param name 
+     * @param author 
+     * @param cover 
+     * @param duration 
+     * @param bitRate 
+     * @param color 
+     * @returns 
+     */
     private returnCompleteVideoResource(url: string, name: string, author: string, cover: string, duration: number, bitRate: number, color: string)
     {
         const VideoResource: VideoResource = {
@@ -227,6 +256,7 @@ export class BilibiliSearch
 
     /**
      * 更换bilibiliQn
+     * @param biliBiliqn biliBiliqn
      */
     private changeBilibiliQn(biliBiliqn: number)
     {
