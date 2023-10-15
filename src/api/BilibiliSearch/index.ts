@@ -1,62 +1,78 @@
 import axios from 'axios';
 import { Logger } from 'koishi';
+import { BiliBiliApi } from '../BiliBiliApi';
 
 export let tempData = {};
 export class BilibiliSearch
 {
     thisPlatform: string;
-    SESSDATA: string;
-    buvid3: string;
-    biliBiliPlatform: 'pc' | 'html5';
-    biliBiliqn: number;
     private logger: Logger;
-    constructor(thisPlatform: string, SESSDATA: string, buvid3: string)
+    constructor(thisPlatform: string)
     {
         this.thisPlatform = thisPlatform;
-        this.SESSDATA = SESSDATA;
-        this.buvid3 = buvid3;
-        this.biliBiliPlatform = 'pc';
-        this.biliBiliqn = 112
         this.logger = new Logger('nazrin-video-bilibili');
     }
-    public async search(keyword: string)
+    /**
+     * 搜索阶段的函数
+     * @param keyword 关键词
+     * @param SESSDATA bilibili的SESSDATA
+     * @param buvid3 bilibili的buvid3
+     * @returns 
+     */
+    public async search(keyword: string, SESSDATA: string, buvid3: string)
     {
-        let resultData:VideoSerachData [];
-        const data = await this.getBilibiliVideoSearchData(keyword);
-        if (!data && !data.result){
+        const biliBiliApi = new BiliBiliApi();
+
+        function isVideo(item: bili_userData | video): item is video
+        {
+            return 'id' in item && 'author' in item && 'typeid' in item && 'typename' in item;
+        }
+
+        let resultData = [] as video[];
+
+        const data = await biliBiliApi.getBilibiliVideoSearchData(keyword, SESSDATA, buvid3, this.logger);
+
+        if (!data || !data.result)
+        {
             return this.returnErr();
         }
-        
-        if(data.result && data.result[11] && data.result[11].data) {
-            console.log(data.result[11].data[0])
+
+        if (data.result[11] && Array.isArray(data.result[11].data) && data.result[11].data.every(isVideo))
+        {
             resultData = data.result[11].data;
-        } else if(data.result && data.result[10] && data.result[10].data) {
+        } else if (data.result[10] && Array.isArray(data.result[10].data) && data.result[10].data.every(isVideo))
+        {
             resultData = data.result[10].data;
-            
-        } else {
-            
+        } else
+        {
+            this.logger.info('搜索阶段没有找到video或者符合video结构的result');
             return this.returnErr();
         }
-        
-        
-        
 
-        const avid: number[] = {} = resultData.map((item: { aid: number; }) =>
+        const avid: number[] = resultData.map((item: video) => item.aid);
+
+        const promises = avid.map(async avid =>
         {
-            const avid = item.aid;
-
-            return avid;
-        });
-
-        let promises = avid.map(async avid =>
-        {
-            return await this.getBilibiliVideoDataByAid(avid);
+            return await biliBiliApi.getBilibiliVideoDetailByAid(avid, SESSDATA, this.logger);
         });
 
         const videoData = await Promise.all(promises);
-        promises = videoData.filter(video => video !== null).map(async videoData =>
+
+        const processedData = videoData.map(videoData =>
         {
-            
+            if (videoData === null)
+            {
+                return {
+                    name: '无法获取',
+                    author: '无法获取',
+                    cover: '无法获取',
+                    url: null,
+                    platform: this.thisPlatform,
+                    err: false,
+                    data: null
+                };
+            }
+
             let backObj = {
                 name: videoData.title || '无法获取',
                 author: videoData.owner.name || '无法获取',
@@ -70,16 +86,13 @@ export class BilibiliSearch
             return backObj;
         });
 
-        const findList = await Promise.all(promises);        
-        if (!findList) this.returnErr();
-
-        return findList;
-
-
+        return processedData;
     }
-    public async returnVideoResource(data: any, qn: number)
+
+    public async returnVideoResource(data: VideoData, SESSDATA: string, biliBiliqn: number)
     {
-        this.biliBiliqn = qn
+        let biliBiliPlatform = 'pc';
+        const biliBiliApi = new BiliBiliApi;
         const avid = data.aid;
         const bvid = data.bvid;
         const cid = data.cid;
@@ -93,23 +106,23 @@ export class BilibiliSearch
         if (data.pages) duration = this.getDurationByCid(data.pages, data.cid);
         else duration = data.duration + 1;
 
-        let videoStream = await this.getBilibiliVideoStream(avid, bvid, cid);
+        let videoStream = await biliBiliApi.getBilibiliVideoStream(avid, bvid, cid, SESSDATA, biliBiliPlatform, biliBiliqn, this.logger);
 
         while (await this.checkResponseStatus(videoStream.durl[0].url) === false)
         {
-            this.biliBiliPlatform = 'html5';
-            if (this.biliBiliPlatform === 'html5')
+            biliBiliPlatform = 'html5';
+            if (biliBiliPlatform === 'html5')
             {
-                this.changeBilibiliQn();
+                biliBiliqn = this.changeBilibiliQn(biliBiliqn);
             }
-            videoStream = await this.getBilibiliVideoStream(avid, bvid, cid);
-            if (this.biliBiliqn === 6) break;
+            videoStream = await biliBiliApi.getBilibiliVideoStream(avid, bvid, cid, SESSDATA, biliBiliPlatform, biliBiliqn, this.logger);
+            if (biliBiliqn === 6) break;
         }
-        const url = videoStream.durl[0].url
+        const url = videoStream.durl[0].url;
 
-        const bitrate = this.getQuality(videoStream.quality)
+        const bitrate = this.getQuality(videoStream.quality);
 
-        return this.returnCompleteVideoResource(url, name, author, cover, duration, bitrate, color)
+        return this.returnCompleteVideoResource(url, name, author, cover, duration, bitrate, color);
 
 
     }
@@ -147,98 +160,7 @@ export class BilibiliSearch
         return VideoResource;
     }
 
-    private async getBilibiliVideoSearchData(keyWord: string)
-    {
-        const url = 'https://api.bilibili.com/x/web-interface/wbi/search/all/v2';
-        const params = {
-            keyword: keyWord
-        };
-        const headers = await {
-            Cookie: `SESSDATA=${this.SESSDATA};buvid3=${this.buvid3};`,  // 你的SESSDATA
-        };
 
-        try
-        {
-            const response = await axios.get(url, { params, headers });
-            return response.data.data;
-        } catch (error: any)
-        {
-            return null;
-        }
-
-    }
-
-    private async getBilibiliVideoDataByAid(aid: number)
-    {
-        const url = 'https://api.bilibili.com/x/web-interface/view';
-        const params = {
-            aid: aid
-        };
-        const headers = await {
-            Cookie: `SESSDATA=${this.SESSDATA};`,  // 你的SESSDATA
-        };
-
-        try
-        {
-
-            const response = await axios.get(url, { params, headers });
-            if (response.data.code === 0)
-            {
-                return response.data.data;
-            } else
-            {
-                return null;
-            }
-
-        } catch (error: any)
-        {
-            this.logger.error('Error:', error.response.data.code);
-            return null;
-        }
-
-    }
-
-    /**
-     * 主要获取视频的url
-     * @param avid bilibili avid
-     * @param bvid bilibili bvid
-     * @param cid bilibili cid
-     * @returns 
-     */
-    private async getBilibiliVideoStream(avid: string, bvid: string, cid: string)
-    {
-        const url = 'https://api.bilibili.com/x/player/wbi/playurl';
-        const params = {
-            bvid: bvid,
-            avid: avid,
-            cid: cid,
-            qn: this.biliBiliqn,
-            fnval: 1 | 128,
-            fourk: 1,
-            platform: this.biliBiliPlatform,
-            high_quality: 1
-        };
-        const headers = await {
-            Cookie: `SESSDATA=${this.SESSDATA};`,  // 你的SESSDATA
-            Referer: 'https://www.bilibili.com',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
-        };
-
-        try
-        {
-            const response = await axios.get(url, { params, headers });
-            if (response.data.code === 0)
-            {
-                return response.data.data;
-            } else
-            {
-                this.logger.error('Error:', response.data.message);
-            }
-        } catch (error: any)
-        {
-            this.logger.error('Error:', error.message);
-        }
-    }
 
     /**
      * 根据qn获取quality
@@ -307,42 +229,43 @@ export class BilibiliSearch
     /**
      * 更换bilibiliQn
      */
-    private changeBilibiliQn()
+    private changeBilibiliQn(biliBiliqn: number)
     {
-        switch (this.biliBiliqn)
+        switch (biliBiliqn)
         {
             case 127: // 8k
-                this.biliBiliqn = 126;
+                biliBiliqn = 126;
                 break;
             case 126: // 杜比视界
-                this.biliBiliqn = 125;
+                biliBiliqn = 125;
                 break;
             case 125: // HDR 真彩色
-                this.biliBiliqn = 120;
+                biliBiliqn = 120;
                 break;
             case 120: // 4k
-                this.biliBiliqn = 116;
+                biliBiliqn = 116;
                 break;
             case 116: // 1080p60帧
-                this.biliBiliqn = 112;
+                biliBiliqn = 112;
                 break;
             case 112: // 1080p高码率
-                this.biliBiliqn = 80;
+                biliBiliqn = 80;
                 break;
             case 80:
-                this.biliBiliqn = 74;
+                biliBiliqn = 74;
                 break;
             case 74: // 720p60帧
-                this.biliBiliqn = 64;
+                biliBiliqn = 64;
                 break;
             case 64:
-                this.biliBiliqn = 16;
+                biliBiliqn = 16;
                 break;
             case 16: // 未登录的默认值
-                this.biliBiliqn = 6;
+                biliBiliqn = 6;
                 break;
             case 6: //仅 MP4 格式支持, 仅platform=html5时有效
                 break;
         }
+        return biliBiliqn;
     }
 }
