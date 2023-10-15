@@ -15,6 +15,7 @@
 </div>
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-nazrin-video-bilibili?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-nazrin-video-bilibili)
+[![CodeFactor](https://www.codefactor.io/repository/github/jingming295/koishi-plugin-nazrin-video-bilibili/badge)](https://www.codefactor.io/repository/github/jingming295/koishi-plugin-nazrin-video-bilibili)
 
 # 🎉koishi-plugin-nazrin-video-bilibili
 
