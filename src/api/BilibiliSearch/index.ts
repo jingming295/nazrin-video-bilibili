@@ -21,21 +21,27 @@ export class BilibiliSearch
     }
     public async search(keyword: string)
     {
-        let result:any;
+        let resultData:VideoSerachData [];
         const data = await this.getBilibiliVideoSearchData(keyword);
-        if (!data){
+        if (!data && !data.result){
             return this.returnErr();
         }
-        if(!data.result[11]){
-            if(!data.result[10]) return this.returnErr();
-            result = data.result[10].data;
+        
+        if(data.result && data.result[11] && data.result[11].data) {
+            console.log(data.result[11].data[0])
+            resultData = data.result[11].data;
+        } else if(data.result && data.result[10] && data.result[10].data) {
+            resultData = data.result[10].data;
+            
         } else {
-            result = data.result[11].data;
+            
+            return this.returnErr();
         }
-
+        
+        
         
 
-        const avid: number[] = {} = result.map((item: { aid: number; }) =>
+        const avid: number[] = {} = resultData.map((item: { aid: number; }) =>
         {
             const avid = item.aid;
 
@@ -48,9 +54,9 @@ export class BilibiliSearch
         });
 
         const videoData = await Promise.all(promises);
-
         promises = videoData.filter(video => video !== null).map(async videoData =>
         {
+            
             let backObj = {
                 name: videoData.title || '无法获取',
                 author: videoData.owner.name || '无法获取',
@@ -64,8 +70,7 @@ export class BilibiliSearch
             return backObj;
         });
 
-        const findList = await Promise.all(promises);
-
+        const findList = await Promise.all(promises);        
         if (!findList) this.returnErr();
 
         return findList;
