@@ -118,7 +118,7 @@ interface VideoData
     user_garb: {
         url_image_ani_cut: string;
     };
-    honor_reply: HonorReply | {};
+    honor_reply: HonorReply | Record<string, never>;
     like_icon: string;
     need_jump_bv: boolean;
     disable_show_up_info: boolean;

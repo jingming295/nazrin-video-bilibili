@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { Logger } from 'koishi';
 import { BiliBiliApi } from '../BiliBiliApi';
-
-export let tempData = {};
 export class BilibiliSearch
 {
     thisPlatform: string;
@@ -73,7 +71,7 @@ export class BilibiliSearch
                 };
             }
 
-            let backObj = {
+            const backObj = {
                 name: videoData.title || '无法获取',
                 author: videoData.owner.name || '无法获取',
                 cover: videoData.pic || '无法获取',
@@ -128,7 +126,7 @@ export class BilibiliSearch
     }
     private returnErr()
     {
-        let findList = [
+        const findList = [
             {
                 err: true,
                 platform: this.thisPlatform
