@@ -21,6 +21,6 @@
   ],
   "peerDependencies": {
     "koishi": "^4.15.0",
-    "koishi-plugin-nazrin-core": "^0.0.2"
+    "koishi-plugin-nazrin-core": "^0.1.0"
   }
 }
