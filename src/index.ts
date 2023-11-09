@@ -33,7 +33,7 @@ export async function apply(ctx: Context, config: Config)
       const bilibiliAccountData = await ctx.bilibiliLogin.getBilibiliAccountData()
       if (!bilibiliAccountData) return
       const bilibiliSearch = new BilibiliSearch(thisPlatform);
-      const findList = await bilibiliSearch.search(keyword,  bilibiliAccountData.SESSDATA, bilibiliAccountData.csrf);
+      const findList = await bilibiliSearch.search(keyword,  bilibiliAccountData.SESSDATA);
       return ctx.emit('nazrin/search_over', findList);
     })
   });
@@ -44,15 +44,19 @@ export async function apply(ctx: Context, config: Config)
     if (platform !== thisPlatform) return;  // 判断是否为本平台的解析请求
     const bilibiliSearch = new BilibiliSearch(thisPlatform);
 
-    const videoResource = await bilibiliSearch.returnVideoResource(data,  config["SESSDATA"],  config["qn"]);
-    if (!videoResource) return;
-    ctx.emit('nazrin/parse_over',
-      videoResource.url,
-      videoResource.name,
-      videoResource.author,
-      videoResource.cover,
-      videoResource.duration,
-      videoResource.bitRate,
-      videoResource.color);
-  });
+    ctx.inject(['bilibiliLogin'],async (ctx)=>{
+      const bilibiliAccountData = await ctx.bilibiliLogin.getBilibiliAccountData()
+      if (!bilibiliAccountData) return
+      const videoResource = await bilibiliSearch.returnVideoResource(data,  bilibiliAccountData.SESSDATA,  config["qn"]);
+      if (!videoResource) return;
+      ctx.emit('nazrin/parse_over',
+        videoResource.url,
+        videoResource.name,
+        videoResource.author,
+        videoResource.cover,
+        videoResource.duration,
+        videoResource.bitRate,
+        videoResource.color);
+    });
+    });
 }

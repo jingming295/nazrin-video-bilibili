@@ -17,7 +17,7 @@ export class BilibiliSearch
      * @param buvid3 bilibili的buvid3
      * @returns 
      */
-    public async search(keyword: string, SESSDATA: string, csrf:string)
+    public async search(keyword: string, SESSDATA: string)
     {
         const biliBiliApi = new BiliBiliApi();
 
