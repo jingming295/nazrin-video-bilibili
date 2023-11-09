@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import { Logger } from 'koishi';
 /**
  * BiliBili的Api
@@ -9,20 +9,19 @@ export class BiliBiliApi
      * 搜索请求
      * @param keyWord 关键词
      * @param SESSDATA SESSDATA
-     * @param buvid3 buvid3
      * @param logger logger
      * @returns BVideoSearchResponseData
      */
-    public async getBilibiliVideoSearchData(keyWord: string, SESSDATA: string, buvid3: string, logger: Logger)
+    public async getBilibiliVideoSearchData(keyWord: string, SESSDATA: string, logger: Logger, )
     {
         const url = 'https://api.bilibili.com/x/web-interface/wbi/search/all/v2';
         const params = {
             keyword: keyWord
         };
-        const headers = await {
-            Cookie: `SESSDATA=${SESSDATA};buvid3=${buvid3};`,  // 你的SESSDATA
+        const headers = {
+            Cookie: `SESSDATA=${SESSDATA};buvid3=295B8C67-E673-E749-9EFF-CF84E653814B00840infoc`,  // 你的SESSDATA
+            'Content-Type': 'application/json', // 设置为 JSON 类型
         };
-
         try
         {
             const response = await axios.get(url, { params, headers });
@@ -34,10 +33,9 @@ export class BiliBiliApi
             return null;
         } catch (error)
         {
-            logger.error('Error in getBilibiliVideoSearchData():', error);
+            logger.error('Error in getBilibiliVideoSearchData():', (error as AxiosError));
             return null;
         }
-
     }
 
     /**

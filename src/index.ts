@@ -1,10 +1,11 @@
 import { Context } from 'koishi';
 import { BilibiliSearch } from './api/BilibiliSearch';
+import {  } from  'koishi-plugin-bilibili-login'
 
 // 导入nazrin核心
 import { } from 'koishi-plugin-nazrin-core';
 // 声明使用nazrin核心
-export const using = ['nazrin'];
+export const inject = ['nazrin', 'bilibiliLogin'];
 export const name = 'nazrin-video-bilibili';
 
 
@@ -17,7 +18,7 @@ interface Config
   qn: number;
 }
 
-export function apply(ctx: Context, config: Config)
+export async function apply(ctx: Context, config: Config)
 {
   if (!config["SESSDATA"]) return;
   const thisPlatform = 'bilibili';
@@ -28,9 +29,13 @@ export function apply(ctx: Context, config: Config)
 
   ctx.on('nazrin/video', async (ctx: Context, keyword: string) =>
   {
-    const bilibiliSearch = new BilibiliSearch(thisPlatform);
-    const findList = await bilibiliSearch.search(keyword,  config["SESSDATA"], config["buvid3"]);
-    return ctx.emit('nazrin/search_over', findList);
+    ctx.inject(['bilibiliLogin'],async (ctx)=>{
+      const bilibiliAccountData = await ctx.bilibiliLogin.getBilibiliAccountData()
+      if (!bilibiliAccountData) return
+      const bilibiliSearch = new BilibiliSearch(thisPlatform);
+      const findList = await bilibiliSearch.search(keyword,  bilibiliAccountData.SESSDATA, bilibiliAccountData.csrf);
+      return ctx.emit('nazrin/search_over', findList);
+    })
   });
 
 

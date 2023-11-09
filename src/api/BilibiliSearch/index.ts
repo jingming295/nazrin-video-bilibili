@@ -17,7 +17,7 @@ export class BilibiliSearch
      * @param buvid3 bilibili的buvid3
      * @returns 
      */
-    public async search(keyword: string, SESSDATA: string, buvid3: string)
+    public async search(keyword: string, SESSDATA: string, csrf:string)
     {
         const biliBiliApi = new BiliBiliApi();
 
@@ -28,7 +28,7 @@ export class BilibiliSearch
 
         let resultData = [] as video[];
 
-        const data = await biliBiliApi.getBilibiliVideoSearchData(keyword, SESSDATA, buvid3, this.logger);
+        const data = await biliBiliApi.getBilibiliVideoSearchData(keyword, SESSDATA, this.logger);
 
         if (!data || !data.result)
         {
