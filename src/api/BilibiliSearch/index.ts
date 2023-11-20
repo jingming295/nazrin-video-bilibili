@@ -112,19 +112,21 @@ export class BilibiliSearch
         else duration = data.duration + 1;
 
         let videoStream = await biliBiliApi.getBilibiliVideoStream(avid, bvid, cid, SESSDATA, biliBiliPlatform, biliBiliqn, this.logger);
-
         while (await this.checkResponseStatus(videoStream.durl[0].url) === false)
         {
-            biliBiliPlatform = 'html5';
-            if (biliBiliPlatform === 'html5')
+            biliBiliPlatform = 'html';
+            if (biliBiliPlatform === 'html')
             {
                 biliBiliqn = this.changeBilibiliQn(biliBiliqn);
             }
+            
             videoStream = await biliBiliApi.getBilibiliVideoStream(avid, bvid, cid, SESSDATA, biliBiliPlatform, biliBiliqn, this.logger);
             if (biliBiliqn === 6) break;
         }
+        
         const url = videoStream.durl[0].url;
-
+        console.log(videoStream)
+        console.log(url)
         const bitrate = this.getQuality(videoStream.quality);
 
         return this.returnCompleteVideoResource(url, name, author, cover, duration, bitrate, color);
@@ -240,6 +242,7 @@ export class BilibiliSearch
                     Range: 'bytes=0-1'
                 }
             });
+            
             if (response.status === 403 || response.status === 410)
             {
                 return false;
@@ -249,7 +252,6 @@ export class BilibiliSearch
             }
         } catch (error)
         {
-            this.logger.error(error);
             return false;
         }
     }
