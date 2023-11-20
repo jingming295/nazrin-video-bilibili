@@ -125,10 +125,7 @@ export class BilibiliSearch
         }
         
         const url = videoStream.durl[0].url;
-        console.log(videoStream)
-        console.log(url)
         const bitrate = this.getQuality(videoStream.quality);
-
         return this.returnCompleteVideoResource(url, name, author, cover, duration, bitrate, color);
 
 

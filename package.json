@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-nazrin-video-bilibili",
   "description": "赋予[nazrin-core](https://github.com/BSTluo/koishi-plugin-nazrin-core)聚合b站视频的能力",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "homepage": "https://github.com/jingming295/koishi-plugin-nazrin-video-bilibili",
