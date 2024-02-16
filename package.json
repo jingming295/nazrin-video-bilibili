@@ -10,7 +10,6 @@
     "dist"
   ],
   "license": "MIT",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
@@ -22,6 +21,6 @@
   "peerDependencies": {
     "koishi": "^4.15.0",
     "koishi-plugin-bilibili-login": "^0.1.0",
-    "koishi-plugin-nazrin-core": "^0.1.0"
+    "koishi-plugin-nazrin-core": "^0.1.10"
   }
 }
