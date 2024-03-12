@@ -1,11 +1,11 @@
 import { Context, Logger } from 'koishi';
 import { BilibiliSearch } from './api/BilibiliSearch';
-import { } from 'koishi-plugin-bilibili-login';
+import { BVideoDetail } from 'koishi-plugin-bilibili-login';
 
 // 导入nazrin核心
 import { } from 'koishi-plugin-nazrin-core';
 // 声明使用nazrin核心
-export const inject = ['nazrin', 'bilibiliLogin'];
+export const inject = ['nazrin', 'BiliBiliSearch', 'BiliBiliVideo'];
 export const name = 'nazrin-video-bilibili';
 
 
@@ -31,27 +31,26 @@ export async function apply(ctx: Context, config: Config)
     }
     ctx.on('nazrin/video', async (ctx: Context, keyword: string) =>
     {
-      ctx.inject(['bilibiliLogin'], async (ctx) =>
+      ctx.inject(['BiliBiliSearch', 'BiliBiliVideo'], async (ctx) =>
       {
-        const bilibiliAccountData = await ctx.bilibiliLogin.getBilibiliAccountData();
-        if (!bilibiliAccountData) return;
+        const bs = ctx.BiliBiliSearch;
+        const bv = ctx.BiliBiliVideo;
         const bilibiliSearch = new BilibiliSearch(thisPlatform);
-        const findList = await bilibiliSearch.search(keyword, bilibiliAccountData.SESSDATA);
+        const findList = await bilibiliSearch.search(bs,bv, keyword);
         return ctx.emit('nazrin/search_over', findList);
       });
     });
 
 
-    ctx.on('nazrin/parse_video', async (ctx: Context, platform, url, data: VideoData) =>
+    ctx.on('nazrin/parse_video', async (ctx: Context, platform, url, data: BVideoDetail) =>
     {
       if (platform !== thisPlatform) return;  // 判断是否为本平台的解析请求
       const bilibiliSearch = new BilibiliSearch(thisPlatform);
 
-      ctx.inject(['bilibiliLogin'], async (ctx) =>
+      ctx.inject(['BiliBiliVideo'], async (ctx) =>
       {
-        const bilibiliAccountData = await ctx.bilibiliLogin.getBilibiliAccountData();
-        if (!bilibiliAccountData) return;
-        const videoResource = await bilibiliSearch.returnVideoResource(data, bilibiliAccountData.SESSDATA, config["qn"]);
+        const bv = ctx.BiliBiliVideo;
+        const videoResource = await bilibiliSearch.returnVideoResource(bv, data, config["qn"]);
         if (!videoResource) return;
         ctx.emit('nazrin/parse_over',
           videoResource.url,
@@ -60,12 +59,14 @@ export async function apply(ctx: Context, config: Config)
           videoResource.cover,
           videoResource.duration,
           videoResource.bitRate,
-          videoResource.color);
+          videoResource.color,
+          'bilibili'
+          );
       });
     });
   } catch (error)
   {
-    logger.warn(error)
+    logger.warn(error);
   }
 
 }

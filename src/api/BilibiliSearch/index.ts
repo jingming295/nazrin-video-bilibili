@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Logger } from 'koishi';
-import { BiliBiliApi } from '../BiliBiliApi';
+import { BVideoDetail, BVideoDetailDataPage, BiliBiliSearch, BiliBiliVideo } from 'koishi-plugin-bilibili-login';
 export class BilibiliSearch
 {
     thisPlatform: string;
@@ -17,41 +17,30 @@ export class BilibiliSearch
      * @param buvid3 bilibili的buvid3
      * @returns 
      */
-    public async search(keyword: string, SESSDATA: string)
+    public async search(bilibiliSearch:BiliBiliSearch, bilibiliVideo:BiliBiliVideo, keyword: string)
     {
-        const biliBiliApi = new BiliBiliApi();
+        let resultData = []
 
-        function isVideo(item: bili_userData | video): item is video
-        {
-            return 'id' in item && 'author' in item && 'typeid' in item && 'typename' in item;
-        }
+        const data = await bilibiliSearch.getSearchRequestByTypeVideo(keyword, 1);
 
-        let resultData = [] as video[];
-
-        const data = await biliBiliApi.getBilibiliVideoSearchData(keyword, SESSDATA, this.logger);
-
-        if (!data || !data.result)
+        if (!data || !data.data.result)
         {
             return this.returnErr();
         }
 
-        if (data.result[11] && Array.isArray(data.result[11].data) && data.result[11].data.every(isVideo))
+        if (data.data.result)
         {
-            resultData = data.result[11].data;
-        } else if (data.result[10] && Array.isArray(data.result[10].data) && data.result[10].data.every(isVideo))
-        {
-            resultData = data.result[10].data;
+            resultData = data.data.result;
         } else
         {
             this.logger.info('搜索阶段没有找到video或者符合video结构的result');
             return this.returnErr();
         }
-
-        const avid: number[] = resultData.map((item: video) => item.aid);
+        const avid: number[] = resultData.map((item) => item.aid);
 
         const promises = avid.map(async avid =>
         {
-            return await biliBiliApi.getBilibiliVideoDetailByAid(avid, SESSDATA, this.logger);
+            return await bilibiliVideo.getBilibiliVideoDetail(avid);
         });
 
         const videoData = await Promise.all(promises);
@@ -72,9 +61,9 @@ export class BilibiliSearch
             }
 
             const backObj = {
-                name: videoData.title || '无法获取',
-                author: videoData.owner.name || '无法获取',
-                cover: videoData.pic || '无法获取',
+                name: videoData.data?.title || '无法获取',
+                author: videoData.data?.owner.name || '无法获取',
+                cover: videoData.data?.pic || '无法获取',
                 url: null,
                 platform: this.thisPlatform,
                 err: false,
@@ -94,38 +83,41 @@ export class BilibiliSearch
      * @param biliBiliqn biliBiliqn
      * @returns VideoResource
      */
-    public async returnVideoResource(data: VideoData, SESSDATA: string, biliBiliqn: number)
+    public async returnVideoResource(BiliBiliVideo:BiliBiliVideo, data: BVideoDetail, biliBiliqn: number)
     {
         let biliBiliPlatform = 'pc';
-        const biliBiliApi = new BiliBiliApi;
-        const avid = data.aid;
-        const bvid = data.bvid;
-        const cid = data.cid;
+        if(!data || !data.data) return null;
+        const avid = data.data.aid;
+        const bvid = data.data.bvid;
+        const cid = data.data.cid;
 
         let duration: number;
-        const name = data.title;
-        const author = data.owner.name;
-        const cover = data.pic;
+        const name = data.data.title;
+        const author = data.data.owner.name;
+        const cover = data.data.pic;
         const color = 'FFFFFF';
 
-        if (data.pages) duration = this.getDurationByCid(data.pages, data.cid);
-        else duration = data.duration + 1;
+        if (data.data.pages) duration = this.getDurationByCid(data.data.pages, data.data.cid);
+        else duration = data.data.duration + 1;
 
-        let videoStream = await biliBiliApi.getBilibiliVideoStream(avid, bvid, cid, SESSDATA, biliBiliPlatform, biliBiliqn, this.logger);
-        while (await this.checkResponseStatus(videoStream.durl[0].url) === false)
+        let videoStream = await BiliBiliVideo.getBilibiliVideoStream(avid, bvid, cid, biliBiliqn, 'html5', 1);
+        if(!videoStream || !videoStream.data || !videoStream.data.durl || !videoStream.data.quality) return null;
+
+        while (await this.checkResponseStatus(videoStream.data.durl[0].url) === false)
         {
-            biliBiliPlatform = 'html';
-            if (biliBiliPlatform === 'html')
+            biliBiliPlatform = 'html5';
+            if (biliBiliPlatform === 'html5')
             {
                 biliBiliqn = this.changeBilibiliQn(biliBiliqn);
             }
             
-            videoStream = await biliBiliApi.getBilibiliVideoStream(avid, bvid, cid, SESSDATA, biliBiliPlatform, biliBiliqn, this.logger);
+            videoStream = await BiliBiliVideo.getBilibiliVideoStream(avid, bvid, cid, biliBiliqn, 'html5', 1);
+            if(!videoStream || !videoStream.data || !videoStream.data.durl || !videoStream.data.quality) return null;
             if (biliBiliqn === 6) break;
         }
         
-        const url = videoStream.durl[0].url;
-        const bitrate = this.getQuality(videoStream.quality);
+        const url = videoStream.data.durl[0].url;
+        const bitrate = videoStream.data.quality
         return this.returnCompleteVideoResource(url, name, author, cover, duration, bitrate, color);
 
 
@@ -154,7 +146,7 @@ export class BilibiliSearch
      * @param cid cid
      * @returns 
      */
-    private getDurationByCid(pages: Page[], cid: number)
+    private getDurationByCid(pages: BVideoDetailDataPage[], cid: number)
     {
         const page = pages.find((page: { cid: number; }) => page.cid === cid);
         return page!.duration; // 使用非空断言操作符
@@ -181,7 +173,7 @@ export class BilibiliSearch
             duration: duration,
             bitRate: bitRate,
             color: color,
-            error: null
+            error: null,
         };
         return VideoResource;
     }
