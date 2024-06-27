@@ -17,7 +17,7 @@ export class BilibiliSearch
      * @param buvid3 bilibili的buvid3
      * @returns 
      */
-    public async search(bilibiliSearch:BiliBiliSearch, bilibiliVideo:BiliBiliVideo, keyword: string)
+    public async search(bilibiliSearch: BiliBiliSearch, bilibiliVideo: BiliBiliVideo, keyword: string)
     {
         let resultData = []
 
@@ -83,10 +83,10 @@ export class BilibiliSearch
      * @param biliBiliqn biliBiliqn
      * @returns VideoResource
      */
-    public async returnVideoResource(BiliBiliVideo:BiliBiliVideo, data: BVideoDetail, biliBiliqn: number)
+    public async returnVideoResource(BiliBiliVideo: BiliBiliVideo, data: BVideoDetail, biliBiliqn: number)
     {
         let biliBiliPlatform = 'pc';
-        if(!data || !data.data) return null;
+        if (!data || !data.data) return null;
         const avid = data.data.aid;
         const bvid = data.data.bvid;
         const cid = data.data.cid;
@@ -101,7 +101,7 @@ export class BilibiliSearch
         else duration = data.data.duration + 1;
 
         let videoStream = await BiliBiliVideo.getBilibiliVideoStream(avid, bvid, cid, biliBiliqn, 'html5', 1);
-        if(!videoStream || !videoStream.data || !videoStream.data.durl || !videoStream.data.quality) return null;
+        if (!videoStream || !videoStream.data || !videoStream.data.durl || !videoStream.data.quality) return null;
 
         while (await this.checkResponseStatus(videoStream.data.durl[0].url) === false)
         {
@@ -110,12 +110,12 @@ export class BilibiliSearch
             {
                 biliBiliqn = this.changeBilibiliQn(biliBiliqn);
             }
-            
+
             videoStream = await BiliBiliVideo.getBilibiliVideoStream(avid, bvid, cid, biliBiliqn, 'html5', 1);
-            if(!videoStream || !videoStream.data || !videoStream.data.durl || !videoStream.data.quality) return null;
+            if (!videoStream || !videoStream.data || !videoStream.data.durl || !videoStream.data.quality) return null;
             if (biliBiliqn === 6) break;
         }
-        
+
         const url = videoStream.data.durl[0].url;
         const bitrate = videoStream.data.quality
         return this.returnCompleteVideoResource(url, name, author, cover, duration, bitrate, color);
@@ -231,7 +231,7 @@ export class BilibiliSearch
                     Range: 'bytes=0-1'
                 }
             });
-            
+
             if (response.status === 403 || response.status === 410)
             {
                 return false;
