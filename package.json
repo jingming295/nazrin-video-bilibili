@@ -20,7 +20,7 @@
   ],
   "peerDependencies": {
     "koishi": "^4.16.8",
-    "koishi-plugin-bilibili-login": "^0.1.35",
-    "koishi-plugin-nazrin-core": "^0.1.22"
+    "koishi-plugin-bilibili-login": "^0.1.50",
+    "koishi-plugin-nazrin-core": "^0.1.25"
   }
 }
